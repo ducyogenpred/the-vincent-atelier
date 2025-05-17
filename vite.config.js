@@ -1,12 +1,18 @@
-// vite.config.js
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import fg from "fast-glob";
 import fs from "fs";
 import path from "path";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Find all HTML files (except node_modules and dist)
+const htmlFiles = fg.sync(["**/*.html", "!node_modules/**", "!dist/**"]);
+
 export default defineConfig({
-  base: "/the-vincent-atelier/",
+  base: "./", // 👈 All asset paths are now relative
   plugins: [
     tailwindcss(),
     {
@@ -19,7 +25,8 @@ export default defineConfig({
         files.forEach((file) => {
           const filePath = path.join(dir, file);
           let html = fs.readFileSync(filePath, "utf-8");
-          html = html.replace(/href="\/(.*?)"/g, 'href="./$1"');
+          // Replace href="/.../file.html" with href="./.../file.html"
+          html = html.replace(/href="\/([^":]+?)"/g, 'href="./$1"');
           fs.writeFileSync(filePath, html);
         });
       },
@@ -28,9 +35,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: Object.fromEntries(
-        fg.sync(["**/*.html", "!node_modules/**", "!dist/**"]).map((file) => {
+        htmlFiles.map((file) => {
           const fileName = file.split("/").pop();
-          return [fileName.replace(".html", ""), file];
+          return [fileName.replace(".html", ""), resolve(__dirname, file)];
         }),
       ),
     },
