@@ -9,6 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const htmlFiles = fg.sync(["**/*.html", "!node_modules/**", "!dist/**"]);
 
 export default defineConfig({
+  base: '/the-vincent-atelier/',
   plugins: [tailwindcss()],
   build: {
     rollupOptions: {
